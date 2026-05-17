@@ -75,8 +75,6 @@ cp .env.example .env  # add your ANTHROPIC_API_KEY
 streamlit run app.py
 ```
 
-Open [http://localhost:8501](http://localhost:8501).
-
 ### CLI
 
 ```bash
