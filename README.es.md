@@ -12,6 +12,7 @@
 [![Docker](https://img.shields.io/badge/docker-ready-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Tests](https://img.shields.io/badge/tests-38%20passing-brightgreen.svg)](./tests)
 [![Pydantic v2](https://img.shields.io/badge/pydantic-v2-E92063.svg)](https://docs.pydantic.dev/)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 ---
 
@@ -213,7 +214,9 @@ Cobertura:
 
 ## 📜 Licencia
 
-Pendiente de definir. Mientras tanto, todos los derechos reservados.
+Publicado bajo la [Licencia Apache 2.0](LICENSE). Eres libre de usar, modificar, distribuir y sublicenciar el código (también con fines comerciales) siempre que conserves la nota de copyright, indiques los cambios significativos que hayas hecho y no uses el nombre/marcas del proyecto para respaldar trabajos derivados sin permiso.
+
+Copyright © 2026 Acquarts.
 
 ## 🤝 Contribuciones
 
