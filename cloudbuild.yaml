@@ -1,0 +1,68 @@
+# Pipeline de Cloud Build: compilar imagen, subir a Artifact Registry, desplegar a Cloud Run.
+#
+# Lanzar manualmente:
+#   gcloud builds submit --config cloudbuild.yaml \
+#     --substitutions=_REGION=us-central1,_REPO=spec-agent,_SERVICE=spec-agent
+#
+# Sustituciones obligatorias (se pueden pasar con --substitutions o desde la config del trigger):
+#   _REGION   Region de GCP tanto para Artifact Registry como para Cloud Run.
+#   _REPO     Nombre del repositorio de Artifact Registry (formato Docker).
+#   _SERVICE  Nombre del servicio en Cloud Run.
+#
+# Secreto obligatorio en Secret Manager: ANTHROPIC_API_KEY (la version :latest se monta como variable de entorno).
+# La cuenta de servicio runtime de Cloud Run necesita roles/secretmanager.secretAccessor.
+
+substitutions:
+  _REGION: us-central1
+  _REPO: spec-agent
+  _SERVICE: spec-agent
+  _MEMORY: 1Gi
+  _CPU: "1"
+  _TIMEOUT: 600s
+  _CONCURRENCY: "8"
+  _MAX_INSTANCES: "5"
+
+images:
+  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}"
+  - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}"
+      - "-t"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest"
+      - "."
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - "--all-tags"
+      - "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}"
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - "${_SERVICE}"
+      - "--image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${SHORT_SHA}"
+      - "--region=${_REGION}"
+      - "--platform=managed"
+      - "--allow-unauthenticated"
+      - "--port=8080"
+      - "--memory=${_MEMORY}"
+      - "--cpu=${_CPU}"
+      - "--timeout=${_TIMEOUT}"
+      - "--concurrency=${_CONCURRENCY}"
+      - "--max-instances=${_MAX_INSTANCES}"
+      - "--set-env-vars=OUTPUT_DIR=/tmp/output,STREAMLIT_SERVER_HEADLESS=true"
+      - "--set-secrets=ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest"

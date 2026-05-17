@@ -1,0 +1,36 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.env
+.env.local
+
+# Test caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Generated artifacts
+output/
+!output/.gitkeep
+
+# IDE / herramientas locales
+.vscode/
+.idea/
+*.swp
+.claude/
+
+# Memoria del agente Claude Code — contenido personal por sesión
+memory/
+
+# Temporales que se generan en la raíz al subir secretos
+_tmp_*.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml
