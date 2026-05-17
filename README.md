@@ -1,6 +1,8 @@
 # 🤖 AI Spec-Driven Multi-Agent (LangGraph)
 
-> Convierte requisitos en lenguaje natural en specs formales (OpenAPI + Gherkin + Agente Claude) — generados en paralelo por un sistema multi-agente con **LangGraph**.
+**🌐 Language / Idioma**: **English** · [Español](README.es.md)
+
+> Turn natural-language requirements into formal specs (OpenAPI + Gherkin + Claude Agent) — generated in parallel by a multi-agent system built with **LangGraph**.
 
 [![Python](https://img.shields.io/badge/python-3.11+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.2+-1C3C3C.svg)](https://langchain-ai.github.io/langgraph/)
@@ -13,33 +15,33 @@
 
 ---
 
-## ✨ Qué hace
+## ✨ What it does
 
-Le describes un sistema en lenguaje natural y te devuelve, **en paralelo**, la documentación técnica formal para empezar a desarrollar:
+You describe a system in natural language and it returns, **in parallel**, the formal technical documentation you need to start building:
 
-| Spec | Para qué sirve |
+| Spec | What it's for |
 |---|---|
-| 📄 **OpenAPI 3.1.0** (YAML) | Contrato de tu API REST. Generas backend, cliente y docs con un comando. |
-| 🥒 **Gherkin** (`.feature`) | Casos de prueba BDD con palabras clave en español (`Característica`, `Escenario`, `Dado`, `Cuando`, `Entonces`). |
-| 🧠 **Agente Claude** (`system_prompt.md` + `tools.json`) | Definición lista para conectar a un asistente IA con herramientas. |
+| 📄 **OpenAPI 3.1.0** (YAML) | REST API contract. Generate backend, client SDKs and docs with one command. |
+| 🥒 **Gherkin** (`.feature`) | BDD test scenarios with Spanish keywords (`Característica`, `Escenario`, `Dado`, `Cuando`, `Entonces`). |
+| 🧠 **Claude Agent** (`system_prompt.md` + `tools.json`) | Ready-to-wire system prompt and tool definitions for an AI assistant. |
 
-Todo escrito **en español** y con validación determinista (no LLM-as-judge).
+All generated content is written **in Spanish** (by design — the prompts are tuned for Spanish output) and validated with deterministic parsers (no LLM-as-judge).
 
-## 🏛️ Arquitectura
+## 🏛️ Architecture
 
 ```
-                Texto en lenguaje natural
+                Natural-language requirements
                           │
                           ▼
                 ┌─────────────────────┐
-                │ analyze_requirements│  ← extrae dominio, entidades, acciones…
+                │ analyze_requirements│  ← extracts domain, entities, actions…
                 └──────────┬──────────┘
                            │
                            ▼
                 ┌─────────────────────┐
-                │  route_spec_types   │  ← decide qué specs generar
+                │  route_spec_types   │  ← decides which specs to generate
                 └──────────┬──────────┘
-                           │  Send API (fan-out paralelo)
+                           │  Send API (parallel fan-out)
               ┌────────────┼────────────┐
               ▼            ▼            ▼
         ┌──────────┐ ┌──────────┐ ┌──────────┐
@@ -48,17 +50,17 @@ Todo escrito **en español** y con validación determinista (no LLM-as-judge).
              └────────────┼────────────┘
                           ▼
                 ┌─────────────────────┐
-                │   validate_specs    │  ← parsers reales (openapi-spec-validator + gherkin-official)
+                │   validate_specs    │  ← real parsers (openapi-spec-validator + gherkin-official)
                 └──────────┬──────────┘
                            ▼
                 ┌─────────────────────┐
-                │     consolidate     │  ← escribe a disco + README
+                │     consolidate     │  ← writes to disk + README
                 └─────────────────────┘
 ```
 
-Las ramas paralelas se fusionan en el estado con **reducers de LangGraph** (`operator.or_` para dict, `operator.add` para listas).
+Parallel branches are merged in the shared state via **LangGraph reducers** (`operator.or_` for dicts, `operator.add` for lists).
 
-## 🚀 Inicio rápido
+## 🚀 Quick start
 
 ### Local
 
@@ -67,87 +69,87 @@ git clone https://github.com/Acquarts/ai-spec-driven-multiagent-langgraph.git
 cd ai-spec-driven-multiagent-langgraph
 
 pip install -r requirements.txt
-cp .env.example .env  # añade tu ANTHROPIC_API_KEY
+cp .env.example .env  # add your ANTHROPIC_API_KEY
 
 streamlit run app.py
 ```
 
-Abre [http://localhost:8501](http://localhost:8501).
+Open [http://localhost:8501](http://localhost:8501).
 
 ### CLI
 
 ```bash
-python main.py -r "Construir una API REST para gestionar tareas con auth JWT…"
-python main.py -f mis_requisitos.txt
+python main.py -r "Build a REST API for task management with JWT auth…"
+python main.py -f my_requirements.txt
 ```
 
-### Cloud Run (despliegue de un solo paso)
+### Cloud Run (one-shot deploy)
 
 ```bash
-# Guarda tu clave en Secret Manager
+# Store your key in Secret Manager
 gcloud secrets create ANTHROPIC_API_KEY --replication-policy=automatic
 printf 'sk-ant-...' | gcloud secrets versions add ANTHROPIC_API_KEY --data-file=-
 
-# Despliega
-PROJECT_ID=mi-proyecto ./deploy.sh         # bash
-./deploy.ps1 -ProjectId mi-proyecto        # PowerShell
+# Deploy
+PROJECT_ID=my-project ./deploy.sh         # bash
+./deploy.ps1 -ProjectId my-project        # PowerShell
 ```
 
-Guía completa en [DEPLOY.md](DEPLOY.md).
+Full guide in [DEPLOY.md](DEPLOY.md).
 
-## 🧱 Estructura del proyecto
+## 🧱 Project layout
 
 ```
 ai-spec-driven-multiagent-langgraph/
-├── 🎨 app.py                  # Frontend Streamlit (auth + rate limit + UI)
+├── 🎨 app.py                  # Streamlit frontend (auth + rate limit + UI)
 ├── 💻 main.py                 # CLI
 ├── 📦 src/
-│   ├── config.py             # Cliente Anthropic, retry, logging, parsing JSON
-│   ├── state.py              # SpecState (Pydantic) con reducers
-│   ├── graph.py              # Ensamblaje del StateGraph
-│   ├── cost.py               # Tracker de tokens y coste en USD
-│   ├── rate_limit.py         # Rate limiter en memoria por IP
-│   ├── logging_setup.py      # Logs JSON estructurados (Cloud Logging)
+│   ├── config.py             # Anthropic client, retry, logging, JSON parsing
+│   ├── state.py              # SpecState (Pydantic) with LangGraph reducers
+│   ├── graph.py              # StateGraph assembly
+│   ├── cost.py               # Token + USD cost tracker
+│   ├── rate_limit.py         # In-memory per-IP rate limiter
+│   ├── logging_setup.py      # Structured JSON logs (Cloud Logging-friendly)
 │   └── nodes/
-│       ├── analyzer.py        # 🔍 extrae StructuredRequirements
-│       ├── router.py          # 🔀 decide qué specs generar
-│       ├── openapi.py         # 📄 genera OpenAPI YAML
-│       ├── gherkin.py         # 🥒 genera .feature en español
-│       ├── agent_spec.py      # 🧠 genera system prompt + tools
-│       ├── validator.py       # ✅ validación determinista
-│       └── consolidator.py    # 💾 escribe a disco + README
-├── 🧪 tests/                  # 38 tests con pytest
-├── 🐳 Dockerfile              # Imagen única para Cloud Run
-├── 🏗️ cloudbuild.yaml         # Pipeline CI/CD
-├── 🚀 deploy.sh / deploy.ps1  # Despliegue de un solo paso
-└── 📘 DEPLOY.md / CLAUDE.md   # Documentación
+│       ├── analyzer.py        # 🔍 extracts StructuredRequirements
+│       ├── router.py          # 🔀 decides which specs to generate
+│       ├── openapi.py         # 📄 generates OpenAPI YAML
+│       ├── gherkin.py         # 🥒 generates .feature files (Spanish keywords)
+│       ├── agent_spec.py      # 🧠 generates system prompt + tools
+│       ├── validator.py       # ✅ deterministic validation
+│       └── consolidator.py    # 💾 writes to disk + README
+├── 🧪 tests/                  # 38 tests with pytest
+├── 🐳 Dockerfile              # Single image for Cloud Run
+├── 🏗️ cloudbuild.yaml         # CI/CD pipeline
+├── 🚀 deploy.sh / deploy.ps1  # One-shot deploy scripts
+└── 📘 DEPLOY.md / CLAUDE.md   # Documentation
 ```
 
-## ⚙️ Variables de entorno
+## ⚙️ Environment variables
 
-| Variable | Defecto | Para qué |
+| Variable | Default | Purpose |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | _(obligatoria)_ | Autenticación con la API de Claude. |
-| `APP_PASSWORD` | _(vacío)_ | Si se define, exige password al abrir la UI. Vacío = modo dev sin auth. |
-| `GENERATION_MODEL` | `claude-opus-4-7` | Modelo para generación pesada. |
-| `UTILITY_MODEL` | `claude-haiku-4-5-20251001` | Modelo para tareas rápidas (router). |
-| `RATE_LIMIT_REQUESTS` | `5` | Peticiones por IP en una ventana. |
-| `RATE_LIMIT_WINDOW_SECONDS` | `60` | Tamaño de la ventana en segundos. |
-| `MAX_REQUIREMENTS_CHARS` | `10000` | Límite del input para evitar facturas inesperadas. |
-| `OUTPUT_DIR` | `./output` | Dónde se escriben los specs. En Cloud Run debe ser `/tmp/output`. |
-| `LOG_LEVEL` | `INFO` | Nivel del logger estructurado. |
+| `ANTHROPIC_API_KEY` | _(required)_ | Auth with the Claude API. |
+| `APP_PASSWORD` | _(empty)_ | If set, the UI requires this password to enter. Empty = dev mode, no auth. |
+| `GENERATION_MODEL` | `claude-opus-4-7` | Model for heavy generation (analyzer + spec generators). |
+| `UTILITY_MODEL` | `claude-haiku-4-5-20251001` | Model for fast tasks (router). |
+| `RATE_LIMIT_REQUESTS` | `5` | Requests per IP within the window. |
+| `RATE_LIMIT_WINDOW_SECONDS` | `60` | Window size in seconds. |
+| `MAX_REQUIREMENTS_CHARS` | `10000` | Input size cap to avoid runaway bills. |
+| `OUTPUT_DIR` | `./output` | Where specs are written. On Cloud Run must be `/tmp/output`. |
+| `LOG_LEVEL` | `INFO` | Structured logger level. |
 
-## 🛡️ Seguridad
+## 🛡️ Security
 
-- 🔐 **Auth con password compartido** (`APP_PASSWORD`) en la UI Streamlit, con `hmac.compare_digest`.
-- 🚦 **Rate limit** en memoria por IP (5 req/min por defecto).
-- 📏 **Límite de longitud del input** (10K caracteres por defecto) para evitar inputs abusivos.
-- 🗝️ **Secretos en GCP Secret Manager** — nunca en código ni en variables de entorno hardcodeadas.
-- 🚫 **Sin retry en errores 4xx** — falla rápido en auth/credenciales en vez de gastar latencia.
+- 🔐 **Shared-password auth** (`APP_PASSWORD`) for the Streamlit UI, using `hmac.compare_digest`.
+- 🚦 **In-memory rate limit** per IP (5 req/min by default).
+- 📏 **Input length cap** (10K chars by default) to block abusive prompts.
+- 🗝️ **Secrets in GCP Secret Manager** — never in code or hardcoded env vars.
+- 🚫 **No retry on 4xx errors** — fail fast on auth/credentials issues instead of burning latency.
 
-## 🔭 Observabilidad
+## 🔭 Observability
 
-Cada llamada al LLM emite un log JSON estructurado con:
+Every LLM call emits a structured JSON log line:
 
 ```json
 {
@@ -165,58 +167,58 @@ Cada llamada al LLM emite un log JSON estructurado con:
 }
 ```
 
-Cloud Logging los parsea automáticamente. Filtra por `jsonPayload.node="generate_openapi"` o agrega por `jsonPayload.usd`.
+Cloud Logging parses these automatically. Filter by `jsonPayload.node="generate_openapi"` or aggregate `jsonPayload.usd` for total cost.
 
-## 💰 Tracking de coste
+## 💰 Cost tracking
 
-El sidebar muestra el coste acumulado en USD desde que arrancó el contenedor. El precio se calcula con la tarifa pública de Anthropic por modelo (`src/cost.py`).
+The sidebar shows accumulated USD cost since the container started. Prices are computed from Anthropic's public per-model rates (`src/cost.py`).
 
 ## 🧪 Tests
 
 ```bash
 pytest                          # 38 tests, ~2.5s
-pytest tests/test_nodes.py -v   # tests de un módulo
+pytest tests/test_nodes.py -v   # tests for one module
 ```
 
-Cobertura:
+Coverage:
 
-- ✅ Parseo de respuestas JSON con prosa alrededor (`raw_decode`)
-- ✅ Validación OpenAPI / Gherkin (ES + EN) / Agente
-- ✅ Post-procesado defensivo de `$ref` (corrige el bug del LLM)
-- ✅ Cliente Anthropic mockeado por nodo
-- ✅ Rate limiter (ventanas, claves independientes, expiración)
+- ✅ JSON response parsing tolerating prose before/after (`raw_decode`)
+- ✅ OpenAPI / Gherkin (ES + EN) / Agent validation
+- ✅ Defensive `$ref` post-processing (fixes a recurring LLM bug)
+- ✅ Mocked Anthropic client per node
+- ✅ Rate limiter (windows, independent keys, expiration)
 
 ## 🛠️ Stack
 
-| Capa | Tecnología |
+| Layer | Technology |
 |---|---|
-| Orquestación | [LangGraph](https://langchain-ai.github.io/langgraph/) (`StateGraph`, `Send` API) |
+| Orchestration | [LangGraph](https://langchain-ai.github.io/langgraph/) (`StateGraph`, `Send` API) |
 | LLM | [Anthropic Claude](https://www.anthropic.com/) (Opus 4.7 + Haiku 4.5) |
-| Estado | [Pydantic v2](https://docs.pydantic.dev/) |
+| State | [Pydantic v2](https://docs.pydantic.dev/) |
 | Frontend | [Streamlit](https://streamlit.io/) |
-| Validación | `openapi-spec-validator`, `gherkin-official`, `pyyaml` |
+| Validation | `openapi-spec-validator`, `gherkin-official`, `pyyaml` |
 | Tests | `pytest`, `pytest-asyncio` |
-| Empaquetado | Docker (Python 3.11-slim) |
-| Despliegue | [Google Cloud Run](https://cloud.google.com/run) + Artifact Registry + Secret Manager |
-| Reintentos | `tenacity` (solo errores transitorios) |
+| Packaging | Docker (Python 3.11-slim) |
+| Deployment | [Google Cloud Run](https://cloud.google.com/run) + Artifact Registry + Secret Manager |
+| Retries | `tenacity` (transient errors only) |
 
 ## 🗺️ Roadmap
 
-- [ ] Persistir outputs en GCS (sobrevivir al scale-to-zero)
-- [ ] Separar UI (Streamlit) de backend (FastAPI) — escalado independiente
-- [ ] Tracing con OpenTelemetry / LangSmith
-- [ ] Rate limit con Redis (multi-instancia coherente)
-- [ ] Prompt caching de Anthropic
-- [ ] Pipeline iterativo para sistemas grandes (>10 entidades): primera pasada genera estructura, siguientes refinan
+- [ ] Persist outputs to GCS (survive scale-to-zero)
+- [ ] Split UI (Streamlit) from backend (FastAPI) — independent scaling
+- [ ] Tracing with OpenTelemetry / LangSmith
+- [ ] Rate limit backed by Redis (coherent across multiple instances)
+- [ ] Anthropic prompt caching
+- [ ] Iterative pipeline for large systems (>10 entities): first pass generates structure, subsequent passes refine
 
-## 📜 Licencia
+## 📜 License
 
-Pendiente de definir. Mientras tanto, todos los derechos reservados.
+Not yet defined. All rights reserved for now.
 
-## 🤝 Contribuciones
+## 🤝 Contributing
 
-Issues y PRs bienvenidos. Para cambios grandes, abre un issue primero para discutir el enfoque.
+Issues and PRs welcome. For larger changes, please open an issue first to discuss the approach.
 
 ---
 
-> Hecho con LangGraph, Claude y mucho café. ☕
+> Built with LangGraph, Claude and lots of coffee. ☕
